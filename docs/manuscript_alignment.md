@@ -5,6 +5,9 @@ This document records how the public code package maps to the manuscript:
 > An Algebraically Optimized Tensor-Train Windowed Dynamic Mode Decomposition
 > Method for Large-Scale Non-Stationary Flows
 
+Open-access preprint:
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6922885
+
 The repository is a curated method package.
 
 ## Sections 2 and 3: DMD and TT-DMD Background
