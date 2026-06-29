@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.venv/
+venv/
+env/
+
+# Local data and generated result tensors
+*.npy
+*.npz
+*.pt
+*.pth
+
+# Generated figures and reports
+*.png
+*.pdf
+*.gif
+*.mp4
+outputs/
+figures/
+results/
+
+# Local machine metadata
+.DS_Store
+.idea/
+.vscode/
