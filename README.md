@@ -8,6 +8,9 @@ This repository accompanies the manuscript:
 > **An Algebraically Optimized Tensor-Train Windowed Dynamic Mode Decomposition
 > Method for Large-Scale Non-Stationary Flows**
 
+Open-access preprint:
+[SSRN paper page](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6922885)
+
 The repository is intentionally small. It exposes the algorithmic ingredients
 needed to understand and test the method, while keeping large DNS datasets,
 generated result tensors, manuscript figures, and data preparation utilities
@@ -145,9 +148,8 @@ This repository is released under the MIT License. See `LICENSE`.
 
 ## Citation
 
-The manuscript is not yet formally published. A complete citation will be added
-after publication. Until then, if you use this code, please refer to the
-manuscript title above and cite this repository.
+If you use this code, please cite the open-access SSRN preprint linked above.
+A complete journal citation will be added after formal publication.
 
 ## Release Notes
 
