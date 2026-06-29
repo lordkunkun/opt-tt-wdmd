@@ -1,25 +1,57 @@
 # OPT-TT-WDMD
 
-Reference code for the optimized tensor-train windowed DMD method from our paper
-*An Algebraically Optimized Tensor-Train Windowed Dynamic Mode Decomposition
-Method for Large-Scale Non-Stationary Flows*.
+Reference code for **Optimized Tensor-Train Windowed Dynamic Mode Decomposition
+(OPT-TT-WDMD)**.
 
-Windowed DMD is a standard tool for non-stationary flows, but running DMD over
-many overlapping windows of a large tensorized snapshot sequence gets expensive.
-The optimized variant here builds one global tensor-train of the full space-time
-tensor, keeps the spatial cores fixed, and only slices the temporal core per
-window, so each window solve reduces to a small problem on the temporal-core
-factors.
+This repository accompanies the manuscript:
 
-The package exposes three code paths so you can compare them:
+> **An Algebraically Optimized Tensor-Train Windowed Dynamic Mode Decomposition
+> Method for Large-Scale Non-Stationary Flows**
 
-- `wdmd` — dense WDMD on flattened snapshots (baseline)
-- `direct_tt_wdmd` — TT-WDMD with a separate TT decomposition per window
-- `opt_tt_wdmd` — the optimized global-TT version
+The repository is intentionally small. It exposes the algorithmic ingredients
+needed to understand and test the method, while keeping large DNS datasets,
+generated result tensors, manuscript figures, and data preparation utilities
+outside the public code package.
 
-## Install
+## Overview
 
-Needs Python 3.9+ and PyTorch.
+Windowed Dynamic Mode Decomposition (WDMD) is useful for analyzing
+non-stationary flow data, but repeatedly applying DMD over many windows becomes
+expensive for large tensorized snapshot sequences.
+
+This package implements three closely related code paths:
+
+- dense WDMD on flattened snapshots,
+- direct TT-WDMD on a window-local tensor-train representation,
+- OPT-TT-WDMD using one global tensor-train representation and temporal-core
+  slicing.
+
+The optimized path follows the algebraic organization described in the
+manuscript: build a single global tensor-train representation of the full
+space-time snapshot tensor, reuse the shared spatial TT cores, slice the final
+temporal core for each window, and form each reduced DMD operator from compact
+temporal-core factors.
+
+## Repository Structure
+
+```text
+.
++-- src/optttwdmd/
+|   +-- tensor_train.py      # TT-SVD and TT contraction helpers
+|   +-- dmd.py               # Dense DMD reduced-operator utilities
+|   +-- windowed.py          # WDMD, direct TT-WDMD, and OPT-TT-WDMD routines
++-- examples/
+|   +-- synthetic_demo.py    # Data-free consistency demonstration
++-- pyproject.toml
++-- requirements.txt
++-- LICENSE
++-- README.md
+```
+
+## Environment
+
+The package requires Python 3.9 or newer and uses PyTorch tensors for the main
+linear algebra operations.
 
 ```bash
 python -m venv .venv
@@ -27,31 +59,98 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## Run the demo
+For a manual dependency installation:
+
+```bash
+pip install -r requirements.txt
+```
+
+GPU acceleration is optional. For small demos and most code inspection tasks,
+CPU execution is sufficient.
+
+## Quick Start
+
+Run the synthetic consistency demo:
 
 ```bash
 python examples/synthetic_demo.py
 ```
 
-It builds a small 4D tensor with a few coherent modes, runs all three methods on
-one window, and checks that the eigenvalues agree — they match to about 1e-15. A
-spectrum plot is written to `outputs/`.
+The demo constructs a small four-dimensional tensor, compares dense WDMD,
+direct TT-WDMD, and OPT-TT-WDMD on the same window, prints the eigenvalue
+agreement, and writes a diagnostic plot under `outputs/`.
 
-## Data layout
+## Data Shape Convention
 
-Snapshots are expected as a tensor of shape `(n1, n2, ..., nd, nt)`, with time on
-the last axis. Dense DMD flattens the spatial modes into a vector of length
-`n1 * ... * nd`.
+The code expects tensorized flow snapshots in the shape:
 
-## Data and full results
+```text
+(n1, n2, ..., nd, nt)
+```
 
-The DNS datasets and the boundary-layer results from the paper are too large to
-host here and can't be redistributed, so they are not included; `*.npy`/`*.pt`
-files, figures and `outputs/` are gitignored. You only need the demo above to
-check the algorithmic consistency. To run the method on your own data, pass a
-tensor in the shape above to `opt_tt_wdmd`.
+The final axis is time. Dense DMD views each snapshot as a flattened vector of
+size `n1 * n2 * ... * nd`.
+
+## Manuscript Alignment
+
+This package is organized around the main algorithmic path in the manuscript:
+
+- Sections 2 and 3: dense DMD, TT-SVD, and direct TT-WDMD utilities.
+- Section 4: OPT-TT-WDMD with one global TT representation and temporal-core
+  slicing.
+- Section 5: consistency checks between dense WDMD, direct TT-WDMD, and
+  OPT-TT-WDMD.
+- Section 6: the boundary-layer application follows the same strict
+  OPT-TT-WDMD path, rather than a separate local production variant.
+
+The Section 6 application therefore uses the same method principle as Section
+4: construct a global tensor-train representation of the target space-time
+flow tensor, reuse the spatial TT factors, slice the temporal core over the
+analysis windows, and form the reduced DMD operators from those compact
+temporal-core window factors.
+
+## Reproducing Paper Results
+
+The current public package is a method-facing reference implementation. It is
+designed to reproduce the algorithmic consistency checks without requiring the
+full DNS dataset.
+
+The full runtime benchmark and Section 6 figures require external DNS data and
+experiment-specific driver scripts. Any benchmark or application driver should
+call the same OPT-TT-WDMD implementation exposed by this package and match the
+final manuscript settings, including the training length, window locations, and
+frequency normalization.
+
+## Data Availability
+
+The full DNS datasets used in the manuscript are not included because of their
+storage size and redistribution constraints. Users who want to run the method
+on their own data should provide tensors in the shape described above.
+
+The repository excludes by default:
+
+```text
+*.npy
+*.npz
+*.pt
+*.pth
+outputs/
+figures/
+results/
+```
 
 ## License
 
-MIT — see `LICENSE`. A full citation will be added once the paper is published;
-until then please cite the paper title above.
+This repository is released under the MIT License. See `LICENSE`.
+
+## Citation
+
+The manuscript is not yet formally published. A complete citation will be added
+after publication. Until then, if you use this code, please refer to the
+manuscript title above and cite this repository.
+
+## Release Notes
+
+- The repository is research-oriented and may evolve with the manuscript.
+- Large raw datasets, generated cache files, and manuscript figures are not
+  tracked by Git.
